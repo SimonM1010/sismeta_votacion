@@ -1,0 +1,16 @@
+# === API ===
+fastapi==0.115.6
+uvicorn[standard]==0.34.0
+python-multipart==0.0.20
+
+# === Validacion / Configuracion ===
+pydantic==2.10.4
+pydantic-settings==2.7.0
+
+# === Base de datos (SQL Server) ===
+SQLAlchemy==2.0.36
+pyodbc==5.2.0
+
+# === Seguridad (JWT + hashing) ===
+PyJWT==2.10.1
+bcrypt==4.2.1

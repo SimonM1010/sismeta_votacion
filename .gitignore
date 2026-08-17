@@ -1,0 +1,22 @@
+# Entorno virtual
+venv/
+.venv/
+env/
+
+# Variables de entorno (nunca subir credenciales)
+.env
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# IDE
+.vscode/
+.idea/
+
+# Logs
+*.log

@@ -1,0 +1,60 @@
+CREATE DATABASE Votacion;
+
+USE Votacion;
+CREATE TABLE voter (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    email VARCHAR(150) NOT NULL UNIQUE,
+    has_voted BOOLEAN NOT NULL DEFAULT FALSE
+);
+
+CREATE TABLE candidate (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    party VARCHAR(100),
+    votes INT NOT NULL DEFAULT 0
+);
+
+CREATE TABLE vote (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    voter_id INT NOT NULL,
+    candidate_id INT NOT NULL,
+
+    FOREIGN KEY (voter_id) REFERENCES voter(id),
+    FOREIGN KEY (candidate_id) REFERENCES candidate(id),
+
+    UNIQUE (voter_id)
+);
+
+INSERT INTO voter (name, email, has_voted)
+VALUES
+('Simon', 'Simon@gmail.com', FALSE),
+('Karen', 'karen@gmail.com', FALSE),
+('Maria', 'Maria@gmail.com', FALSE);
+
+INSERT INTO candidate (name, party, votes)
+VALUES
+('James', 'Partido A', 0),
+('Lucho', 'Partido B', 0),
+('Messi', 'Partido C', 0);
+
+SELECT * FROM voter
+
+SELECT * FROM candidate
+
+
+SELECT * FROM vote
+
+
+SELECT
+    c.id,
+    c.name AS candidate,
+    c.party,
+    COUNT(v.id) AS total_votes
+FROM candidate c
+LEFT JOIN vote v
+    ON c.id = v.candidate_id
+GROUP BY c.id, c.name, c.party
+ORDER BY total_votes DESC;
+
+
