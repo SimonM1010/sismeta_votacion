@@ -6,7 +6,7 @@ from pydantic import BaseModel, ConfigDict, Field
 class CandidateCreateDTO(BaseModel):
     """Body de POST /candidates."""
 
-    name: str = Field(..., min_length=1, max_length=150, examples=["Ana Torres"])
+    name: str = Field(..., min_length=1, max_length=150, examples=["Simon Mazo"])
 
 
 class CandidateResponseDTO(BaseModel):

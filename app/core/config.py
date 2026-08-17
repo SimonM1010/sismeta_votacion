@@ -32,7 +32,7 @@ class Settings(BaseSettings):
     DB_PASS: str = ""
     DB_HOST: str = "localhost"
     DB_PORT: int = 3306
-    DB_DATABASE: str = "sismeta_votacion"
+    DB_DATABASE: str = "votacion"
     DB_CHARSET: str = "utf8mb4"
 
     # --- Seguridad / JWT ---
