@@ -13,7 +13,7 @@ from sqlalchemy.orm import DeclarativeBase, Session, sessionmaker
 
 from app.core.config import settings
 
-logger = logging.getLogger(_name_)
+logger = logging.getLogger(__name__)
 
 engine = create_engine(
     settings.database_url,
