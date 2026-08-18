@@ -12,12 +12,12 @@ from app.infrastructure.database.connection import Base
 
 class VoteModel(Base):
     __tablename__ = "Vote"
-    __table_args__ = (UniqueConstraint("VoterId", name="UQ_Vote_VoterId"),)
+    __table_args__ = (UniqueConstraint("Voter_Id", name="UQ_Vote_VoterId"),)
 
     id: Mapped[int] = mapped_column("Id", Integer, primary_key=True, autoincrement=True)
     voter_id: Mapped[int] = mapped_column(
-        "VoterId", Integer, ForeignKey("Voter.Id"), nullable=False
+        "Voter_Id", Integer, ForeignKey("Voter.Id"), nullable=False
     )
     candidate_id: Mapped[int] = mapped_column(
-        "CandidateId", Integer, ForeignKey("Candidate.Id"), nullable=False
+        "Candidate_Id", Integer, ForeignKey("Candidate.Id"), nullable=False
     )

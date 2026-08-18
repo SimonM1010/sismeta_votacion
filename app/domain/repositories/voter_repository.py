@@ -25,3 +25,8 @@ class VoterRepository(ABC):
     @abstractmethod
     def count(self) -> int:
         """Total de votantes registrados (usado en estadisticas)"""
+
+    @abstractmethod
+    def update_hasvoted(self,voter_id:int)-> bool:
+        """Actualiza si el candidato ya voto"""
+        
