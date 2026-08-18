@@ -33,6 +33,20 @@ class SqlAlchemyCandidateRepository(CandidateRepository):
         model = self._session.get(CandidateModel, candidate_id)
         return _to_entity(model) if model else None
 
+    def add_vote(self, candidate_id: int) -> bool:
+        model = self._session.get(CandidateModel, candidate_id)
+
+        if model is None:
+            return False
+
+        model.votes += 1
+        self._session.commit()
+
+        return True
+
+
+
+
     def delete(self, candidate_id: int) -> bool:
         model = self._session.get(CandidateModel, candidate_id)
         if model is None:
@@ -43,4 +57,4 @@ class SqlAlchemyCandidateRepository(CandidateRepository):
 
 
 def _to_entity(model: CandidateModel) -> Candidate:
-    return Candidate(id=model.id, name=model.name)
+    return Candidate(id=model.id, name=model.name,party=model.party,votes=model.votes)

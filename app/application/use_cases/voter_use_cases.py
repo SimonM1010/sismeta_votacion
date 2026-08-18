@@ -12,7 +12,7 @@ class CreateVoterUseCase:
         self._repository = repository
 
     def execute(self, data: VoterCreateDTO) -> Voter:
-        return self._repository.create(Voter(name=data.name))
+        return self._repository.create(Voter(name=data.name,email=data.email))
 
 
 class ListVotersUseCase:

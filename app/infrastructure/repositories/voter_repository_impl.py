@@ -42,4 +42,4 @@ class SqlAlchemyVoterRepository(VoterRepository):
 
 
 def _to_entity(model: VoterModel) -> Voter:
-    return Voter(id=model.id, name=model.name)
+    return Voter(id=model.id, name=model.name,email=model.email,has_voted=model.has_voted)

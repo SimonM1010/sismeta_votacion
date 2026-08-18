@@ -16,7 +16,7 @@ class CreateCandidateUseCase:
         self._repository = repository
 
     def execute(self, data: CandidateCreateDTO) -> Candidate:
-        return self._repository.create(Candidate(name=data.name))
+        return self._repository.create(Candidate(name=data.name,party=data.party))
 
 
 class ListCandidatesUseCase:
