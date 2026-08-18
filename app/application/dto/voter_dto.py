@@ -7,6 +7,7 @@ class VoterCreateDTO(BaseModel):
     """Body de POST /voters."""
 
     name: str = Field(..., min_length=1, max_length=150, examples=["Juan Perez"])
+    email: str = Field(..., min_length=5, max_length=150, examples=["exam@gmail.com"])
 
 
 class VoterResponseDTO(BaseModel):
@@ -16,3 +17,5 @@ class VoterResponseDTO(BaseModel):
 
     id: int
     name: str
+    email: str
+    has_voted:bool

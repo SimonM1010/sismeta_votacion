@@ -7,7 +7,7 @@ class CandidateCreateDTO(BaseModel):
     """Body de POST /candidates."""
 
     name: str = Field(..., min_length=1, max_length=150, examples=["Simon Mazo"])
-
+    party: str = Field(..., min_length=1, max_length=150, examples=["partido A"])
 
 class CandidateResponseDTO(BaseModel):
     """Representacion publica de un candidato."""
@@ -16,3 +16,5 @@ class CandidateResponseDTO(BaseModel):
 
     id: int
     name: str
+    party:str
+    votes:int| None = None
