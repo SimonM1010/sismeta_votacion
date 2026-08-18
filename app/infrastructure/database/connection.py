@@ -55,6 +55,6 @@ def init_db() -> bool:
         logger.warning(
             "No se pudo conectar a MySQL (%s). "
             "La API arranca igual, pero los endpoints con base de datos fallaran.",
-            exc._class.name_,
+            exc.__class__.__name__,
         )
         return False

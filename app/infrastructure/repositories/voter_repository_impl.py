@@ -40,6 +40,17 @@ class SqlAlchemyVoterRepository(VoterRepository):
     def count(self) -> int:
         return self._session.scalar(select(func.count()).select_from(VoterModel)) or 0
 
+    def update_hasvoted(self,voter_id:int)-> bool:
+        model = self._session.get(VoterModel, voter_id)
+    
+        if model is None:
+            return False
+
+        model.has_voted = True
+        self._session.commit()
+
+        return True
+
 
 def _to_entity(model: VoterModel) -> Voter:
     return Voter(id=model.id, name=model.name,email=model.email,has_voted=model.has_voted)

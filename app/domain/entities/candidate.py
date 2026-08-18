@@ -10,6 +10,6 @@ from dataclasses import dataclass
 @dataclass
 class Candidate:
     name: str
+    party:str
     id: int | None = None
-    party:str| None = None
-    votes:int| None = None
+    votes:int = 0
