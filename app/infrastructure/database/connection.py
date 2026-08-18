@@ -7,7 +7,7 @@ levanta aunque MySQL todavia no este disponible.
 import logging
 from collections.abc import Generator
 
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, inspect
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import DeclarativeBase, Session, sessionmaker
 
@@ -49,12 +49,25 @@ def init_db() -> bool:
 
     try:
         Base.metadata.create_all(bind=engine)
-        logger.info("Tablas verificadas/creadas en '%s'", settings.DB_DATABASE)
-        return True
     except SQLAlchemyError as exc:
+        # Se registra el error completo: un CREATE TABLE puede fallar por una FK
+        # incompatible y dejar la base a medias, no solo por falta de conexion.
         logger.warning(
-            "No se pudo conectar a MySQL (%s). "
+            "Fallo la creacion de tablas (%s): %s. "
             "La API arranca igual, pero los endpoints con base de datos fallaran.",
-            exc.__class__.__name__,
+            exc._class.name_,
+            exc,
         )
         return False
+
+    faltantes = sorted(set(Base.metadata.tables) - set(inspect(engine).get_table_names()))
+    if faltantes:
+        logger.error(
+            "Faltan tablas en '%s': %s. Los endpoints que las usen fallaran.",
+            settings.DB_DATABASE,
+            ", ".join(faltantes),
+        )
+        return False
+
+    logger.info("Tablas verificadas/creadas en '%s'", settings.DB_DATABASE)
+    return True

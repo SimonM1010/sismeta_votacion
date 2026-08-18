@@ -11,7 +11,13 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-from sqlalchemy.exc import IntegrityError, SQLAlchemyError
+from sqlalchemy.exc import (
+    IntegrityError,
+    InterfaceError,
+    OperationalError,
+    ProgrammingError,
+    SQLAlchemyError,
+)
 
 from app.core.config import settings
 from app.domain.exceptions import AuthenticationError, ConflictError, NotFoundError
@@ -78,21 +84,21 @@ def _register_exception_handlers(app: FastAPI) -> None:
     """Traduce errores de negocio y de base de datos a respuestas HTTP."""
 
     @app.exception_handler(NotFoundError)
-    async def _not_found(_: Request, exc: NotFoundError) -> JSONResponse:
+    async def not_found(_: Request, exc: NotFoundError) -> JSONResponse:
         return JSONResponse(
             status_code=status.HTTP_404_NOT_FOUND,
             content={"detail": exc.message},
         )
 
     @app.exception_handler(ConflictError)
-    async def _conflict(_: Request, exc: ConflictError) -> JSONResponse:
+    async def conflict(_: Request, exc: ConflictError) -> JSONResponse:
         return JSONResponse(
             status_code=status.HTTP_409_CONFLICT,
             content={"detail": exc.message},
         )
 
     @app.exception_handler(AuthenticationError)
-    async def _unauthorized(_: Request, exc: AuthenticationError) -> JSONResponse:
+    async def unauthorized(_: Request, exc: AuthenticationError) -> JSONResponse:
         return JSONResponse(
             status_code=status.HTTP_401_UNAUTHORIZED,
             content={"detail": exc.message},
@@ -100,18 +106,42 @@ def _register_exception_handlers(app: FastAPI) -> None:
         )
 
     @app.exception_handler(IntegrityError)
-    async def _integrity(_: Request, exc: IntegrityError) -> JSONResponse:
-        # Ej: dos votos simultaneos del mismo votante chocan con el UNIQUE.
+    async def integrity(_: Request, exc: IntegrityError) -> JSONResponse:
         logger.warning("Violacion de integridad: %s", exc.orig)
         return JSONResponse(
             status_code=status.HTTP_409_CONFLICT,
             content={"detail": "La operacion viola una restriccion de la base de datos"},
         )
 
-    @app.exception_handler(SQLAlchemyError)
-    async def _database_error(_: Request, exc: SQLAlchemyError) -> JSONResponse:
-        logger.error("Error de base de datos: %s", exc, exc_info=settings.DEBUG)
+    @app.exception_handler(ProgrammingError)
+    async def schema_error(_: Request, exc: ProgrammingError) -> JSONResponse:
+        logger.error("Error de esquema o de SQL: %s", exc, exc_info=True)
+        return JSONResponse(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            content={"detail": _detail("La consulta no coincide con el esquema de la base de datos", exc)},
+        )
+
+    @app.exception_handler(InterfaceError)
+    @app.exception_handler(OperationalError)
+    async def connection_error(_: Request, exc: SQLAlchemyError) -> JSONResponse:
+        logger.error("Error de conexion con la base de datos: %s", exc, exc_info=True)
         return JSONResponse(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            content={"detail": "No hay conexion con la base de datos"},
+            content={"detail": _detail("No hay conexion con la base de datos", exc)},
         )
+
+    @app.exception_handler(SQLAlchemyError)
+    async def database_error(_: Request, exc: SQLAlchemyError) -> JSONResponse:
+        logger.error("Error de base de datos: %s", exc, exc_info=True)
+        return JSONResponse(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            content={"detail": _detail("Error al operar contra la base de datos", exc)},
+        )
+
+
+def _detail(mensaje: str, exc: Exception) -> str:
+    """En DEBUG agrega el error real de la base; en produccion no lo expone."""
+    if not settings.DEBUG:
+        return mensaje
+    causa = getattr(exc, "orig", None) or exc
+    return f"{mensaje}: {causa}"
