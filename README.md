@@ -95,10 +95,10 @@ sismeta_votacion/
 pip install -r requirements.txt
 ```
 
-### 3. Crear la base de datos en SQL Server
+### 3. Crear la base de datos en Mysql
 
 ```sql
-CREATE DATABASE sismeta_votacion;
+CREATE DATABASE votacion;
 ```
 
 Las **tablas se crean solas** al arrancar la API (`init_db()` en el startup).
@@ -111,7 +111,7 @@ DB_PASS=
 DB_HOST=localhost
 DB_PORT=1433
 DB_DATABASE=sismeta_votacion
-DB_DRIVER=ODBC Driver 17 for SQL Server
+DB_DRIVER=ODBC Driver 17 for SQL 
 
 JWT_SECRET_KEY=<generar>
 JWT_ALGORITHM=HS256
@@ -171,29 +171,29 @@ admin, protegelo agregando `current_user: CurrentUser` a la firma en
 
 ## Como probar en 1 minuto
 
-1. Abre **http://127.0.0.1:8000/docs**
+1. Abre **http://127.0.0.1:8000/docs** para verlo con swagger
 2. `POST /auth/register` -> `{"username": "admin", "password": "admin123"}`
 3. Boton verde **Authorize** (arriba a la derecha) -> mismo usuario y contrasena
 4. Ya puedes ejecutar cualquier endpoint desde la misma pagina.
 
-Con PowerShell:
+Con Postman:
 
-```powershell
+```Postman
 # 1. Registrar usuario
 Invoke-RestMethod -Method Post -Uri http://127.0.0.1:8000/api/v1/auth/register `
   -ContentType "application/json" `
   -Body '{"username":"admin","password":"admin123"}'
 
 # 2. Obtener token (login usa formulario, no JSON)
-$token = (Invoke-RestMethod -Method Post -Uri http://127.0.0.1:8000/api/v1/auth/login `
+$token = (Invoke-RestMethod -Method Post -Uri http://127.0.0.1:8000/api/v1/auth/login`
   -Body @{ username = "admin"; password = "admin123" }).access_token
 $headers = @{ Authorization = "Bearer $token" }
 
 # 3. Cargar datos y votar
-Invoke-RestMethod -Method Post -Uri http://127.0.0.1:8000/api/v1/candidates `
-  -Headers $headers -ContentType "application/json" -Body '{"name":"Ana Torres"}'
+Invoke-RestMethod -Method Post -Uri http://127.0.0.1:8000/api/v1/candidates`
+  -Headers $headers -ContentType "application/json" -Body '{"name":"Wilmar"}'
 Invoke-RestMethod -Method Post -Uri http://127.0.0.1:8000/api/v1/voters `
-  -Headers $headers -ContentType "application/json" -Body '{"name":"Juan Perez"}'
+  -Headers $headers -ContentType "application/json" -Body '{"name":"Fabi"}'
 Invoke-RestMethod -Method Post -Uri http://127.0.0.1:8000/api/v1/votes `
   -Headers $headers -ContentType "application/json" -Body '{"voter_id":1,"candidate_id":1}'
 
@@ -202,81 +202,17 @@ Invoke-RestMethod -Uri http://127.0.0.1:8000/api/v1/votes/statics -Headers $head
   ConvertTo-Json -Depth 5
 ```
 
-Ejemplo de respuesta de `/votes/statics`:
-
-```json
-{
-  "total_votes": 3,
-  "total_voters": 3,
-  "total_candidates": 2,
-  "participation_percentage": 100.0,
-  "results": [
-    { "candidate_id": 1, "candidate_name": "Ana Torres", "votes": 2, "percentage": 66.67 },
-    { "candidate_id": 2, "candidate_name": "Luis Gomez", "votes": 1, "percentage": 33.33 }
-  ]
-}
-```
-
----
-
-## Tablas
-
-Base minima. Agrega tus columnas en `app/infrastructure/database/models/` y el campo
-equivalente en `app/domain/entities/`.
-
-| Tabla | Columnas |
-|-------|----------|
-| `Candidate` | `Id` (PK, identity), `Name` |
-| `Voter` | `Id` (PK, identity), `Name` |
-| `Vote` | `Id` (PK, identity), `VoterId` (FK -> Voter.Id, UNIQUE), `CandidateId` (FK -> Candidate.Id) |
-| `Users` | `Id` (PK, identity), `Username` (UNIQUE), `HashedPassword` |
-
-- `Vote.VoterId` es **UNIQUE**: la base garantiza "un votante, un voto". Si no quieres esa
-  regla, quita el `UniqueConstraint` en `vote_model.py`.
-- `Users` se llama asi porque `USER` es palabra reservada en T-SQL.
-
----
-
-## Reglas de negocio ya implementadas
-
-Estan en los casos de uso (`app/application/use_cases/`), no en los endpoints, para que
-se puedan cambiar sin tocar la capa web.
-
-| Regla | Donde | Respuesta si se viola |
-|-------|-------|-----------------------|
-| El votante y el candidato deben existir para votar | `CastVoteUseCase` | 404 |
-| Un votante solo puede votar una vez | `CastVoteUseCase` + UNIQUE en la tabla | 409 |
-| No se elimina un votante que ya voto | `DeleteVoterUseCase` | 409 |
-| No se elimina un candidato que ya tiene votos | `DeleteCandidateUseCase` | 409 |
-| No se repite el `Username` | `RegisterUserUseCase` + UNIQUE | 409 |
-
-Las dos reglas de borrado evitan votos huerfanos que descuadren el conteo. Si prefieres
-borrado en cascada, quita la verificacion del caso de uso y agrega `ON DELETE CASCADE` a
-las FK de `Vote`.
-
----
-
-## Como agregar un campo nuevo (ejemplo: `Party` en candidato)
-
-Toca 4 archivos, siempre en el mismo orden:
-
-1. `app/domain/entities/candidate.py` -> agrega `party: str`
-2. `app/infrastructure/database/models/candidate_model.py` -> agrega la columna
-3. `app/infrastructure/repositories/candidate_repository_impl.py` -> mapealo en `_to_entity` y en `create`
-4. `app/application/dto/candidate_dto.py` -> agregalo al DTO de entrada y/o de salida
-
----
 
 ## Codigos de respuesta
 
-| Codigo | Cuando |
-|--------|--------|
-| 200 / 201 / 204 | Operacion exitosa |
-| 401 | Sin token, token invalido/expirado, o credenciales incorrectas |
-| 404 | El recurso no existe (`NotFoundError`) |
-| 409 | Regla de negocio violada (`ConflictError`): ver tabla de reglas |
-| 422 | El body no cumple el DTO (validacion de Pydantic) |
-| 503 | SQL Server no responde |
+
+
+200/201/204 Operacion exitosa 
+401 Sin token, token invalido/expirado, o credenciales incorrectas
+404 El recurso no existe (`NotFoundError`)
+409 Regla de negocio violada (`ConflictError`): ver tabla de reglas
+422 El body no cumple el DTO (validacion de Pydantic)
+503 SQL Server no responde
 
 ---
 
@@ -287,6 +223,5 @@ Toca 4 archivos, siempre en el mismo orden:
 - [ ] Proteger o eliminar `POST /auth/register`
 - [ ] Reemplazar `init_db()` por migraciones (Alembic)
 - [ ] Agregar tests con `pytest` (`pip install -r requirements-dev.txt`)
-#   s i s m e t a _ v o t a c i o n  
- #   s i s m e t a _ v o t a c i o n  
- 
+
+

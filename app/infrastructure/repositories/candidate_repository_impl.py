@@ -17,7 +17,7 @@ class SqlAlchemyCandidateRepository(CandidateRepository):
         self._session = session
 
     def create(self, candidate: Candidate) -> Candidate:
-        model = CandidateModel(name=candidate.name)
+        model = CandidateModel(name=candidate.name,party=candidate.party)
         self._session.add(model)
         self._session.commit()
         self._session.refresh(model)

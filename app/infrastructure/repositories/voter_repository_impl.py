@@ -13,7 +13,7 @@ class SqlAlchemyVoterRepository(VoterRepository):
         self._session = session
 
     def create(self, voter: Voter) -> Voter:
-        model = VoterModel(name=voter.name)
+        model = VoterModel(name=voter.name,email=voter.email)
         self._session.add(model)
         self._session.commit()
         self._session.refresh(model)
