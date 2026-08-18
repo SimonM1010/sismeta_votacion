@@ -11,5 +11,5 @@ from dataclasses import dataclass
 class Candidate:
     name: str
     id: int | None = None
-    party:str
+    party:str| None = None
     votes:int| None = None

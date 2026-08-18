@@ -15,5 +15,5 @@ class CandidateModel(Base):
 
     id: Mapped[int] = mapped_column("Id", Integer, primary_key=True, autoincrement=True)
     name: Mapped[str] = mapped_column("Name", String(150), nullable=False)
-    party: Mapped[str] = mapped_column("party", String(150), nullable=False)
-    votes: Mapped[int] = mapped_column("votes", Integer, default=0, server_default="0")
+    party: Mapped[str] = mapped_column("Party", String(150), nullable=False)
+    votes: Mapped[int] = mapped_column("Votes", Integer, default=0, server_default="0")

@@ -191,9 +191,9 @@ $headers = @{ Authorization = "Bearer $token" }
 
 # 3. Cargar datos y votar
 Invoke-RestMethod -Method Post -Uri http://127.0.0.1:8000/api/v1/candidates`
-  -Headers $headers -ContentType "application/json" -Body '{"name":"Wilmar"}'
+  -Headers $headers -ContentType "application/json" -Body '{"name":"Wilmar","party":"Party D"}'
 Invoke-RestMethod -Method Post -Uri http://127.0.0.1:8000/api/v1/voters `
-  -Headers $headers -ContentType "application/json" -Body '{"name":"Fabi"}'
+  -Headers $headers -ContentType "application/json" -Body '{"name":"Fabi","email":"fab@gmail.com"}'
 Invoke-RestMethod -Method Post -Uri http://127.0.0.1:8000/api/v1/votes `
   -Headers $headers -ContentType "application/json" -Body '{"voter_id":1,"candidate_id":1}'
 

@@ -7,5 +7,5 @@ from dataclasses import dataclass
 class Voter:
     name: str
     id: int | None = None
-    email: str
-    has_voted:bool
+    email: str| None = None
+    has_voted:bool| None = None
