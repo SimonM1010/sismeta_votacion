@@ -25,3 +25,8 @@ class CandidateRepository(ABC):
     @abstractmethod
     def delete(self, candidate_id: int) -> bool:
         """Elimina un candidato. Devuelve False si no existia"""
+
+    @abstractmethod
+    def add_vote(self, candidate_id: int) -> bool:
+        """Actualiza la cantidad de votos de un candidato"""
+        

@@ -42,6 +42,9 @@ class CastVoteUseCase:
                 f"El votante con id {data.voter_id} ya emitio su voto"
             )
 
+        if not self._candidates.add_vote(data.candidate_id):
+            raise NotFoundError(f"No existe el candidato con id {data.candidate_id}")
+
         return self._votes.create(
             Vote(voter_id=data.voter_id, candidate_id=data.candidate_id)
         )
